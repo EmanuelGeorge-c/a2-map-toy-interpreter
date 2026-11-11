@@ -31,6 +31,11 @@ public class MyList<T> implements IList<T> {
     }
 
     @Override
+    public List<T> toList() {
+        return new ArrayList<>(list);
+    }
+
+    @Override
     public String toString() {
         return list.toString();
     }
