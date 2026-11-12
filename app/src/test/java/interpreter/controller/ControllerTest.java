@@ -1,5 +1,6 @@
 package interpreter.controller;
 
+import interpreter.exceptions.MyException;
 import interpreter.exceptions.StatementException;
 import interpreter.model.PrgState;
 import interpreter.model.adt.MyDictionary;
@@ -9,26 +10,86 @@ import interpreter.model.exp.ArithExp;
 import interpreter.model.exp.ArithOp;
 import interpreter.model.exp.ValueExp;
 import interpreter.model.exp.VarExp;
-import interpreter.model.stmt.AssignStmt;
-import interpreter.model.stmt.CompStmt;
-import interpreter.model.stmt.IStmt;
-import interpreter.model.stmt.NopStmt;
-import interpreter.model.stmt.PrintStmt;
-import interpreter.model.stmt.VarDeclStmt;
+import interpreter.model.stmt.*;
 import interpreter.model.type.IntType;
+import interpreter.model.type.StringType;
 import interpreter.model.value.IntValue;
+import interpreter.model.value.StringValue;
 import interpreter.repository.Repository;
+import interpreter.view.Examples;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ControllerTest {
 
-    private static PrgState run(IStmt program) throws Exception {
+    @TempDir
+    Path dir;
+
+    private PrgState run(IStmt program) throws MyException {
         PrgState state = PrgState.of(program);
-        Controller controller = new Controller(new Repository(state,"test.log"), false);
-        controller.allStep();
+        var repo = new Repository(state, dir.resolve("log.txt").toString());
+        new Controller(repo, false).allStep();                   // display off
         return state;
+    }
+
+//    private static PrgState run(IStmt program) throws Exception {
+//        PrgState state = PrgState.of(program);
+//        Controller controller = new Controller(new Repository(state,"test.log"), false);
+//        controller.allStep();
+//        return state;
+//    }
+
+    private IStmt buildFileProgram(Path inputFile) {
+        return new CompStmt(
+                new VarDeclStmt("varf", new StringType()),
+                new CompStmt(
+                        new AssignStmt("varf", new ValueExp(new StringValue(inputFile.toString()))),
+                        new CompStmt(
+                                new OpenRFileStmt(new VarExp("varf")),
+                                new CompStmt(
+                                        new VarDeclStmt("varc", new IntType()),
+                                        new CompStmt(
+                                                new ReadFileStmt(new VarExp("varf"), "varc"),
+                                                new CompStmt(
+                                                        new PrintStmt(new VarExp("varc")),
+                                                        new CompStmt(
+                                                                new ReadFileStmt(new VarExp("varf"), "varc"),
+                                                                new CompStmt(
+                                                                        new PrintStmt(new VarExp("varc")),
+                                                                        new CloseRFileStmt(new VarExp("varf"))
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
+    @Test
+    void fileExampleReadsBothNumbersAndClosesTheFile() throws Exception {
+        Path in = dir.resolve("test.in");
+        Files.writeString(in, "15\n50\n");
+        IStmt program = buildFileProgram(in);
+        PrgState s = run(program);
+        assertEquals(new IntValue(15), s.getOut().get(0));
+        assertEquals(new IntValue(50), s.getOut().get(1));
+        assertTrue(s.getFileTable().toMap().isEmpty());
+    }
+
+    @Test
+    void logFileContainsTheFourSectionsInOrder() throws Exception {
+        run(Examples.EX1);
+        String log = Files.readString(dir.resolve("log.txt"));
+        int a = log.indexOf("ExeStack:"), b = log.indexOf("SymTable:"),
+                c = log.indexOf("Out:"),      d = log.indexOf("FileTable:");
+        assertTrue(0 <= a && a < b && b < c && c < d);
     }
 
     @Test
