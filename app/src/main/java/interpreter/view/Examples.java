@@ -1,19 +1,14 @@
 package interpreter.view;
 
-import interpreter.model.exp.ArithExp;
-import interpreter.model.exp.ArithOp;
-import interpreter.model.exp.ValueExp;
-import interpreter.model.exp.VarExp;
-import interpreter.model.stmt.AssignStmt;
-import interpreter.model.stmt.CompStmt;
-import interpreter.model.stmt.IfStmt;
-import interpreter.model.stmt.IStmt;
-import interpreter.model.stmt.PrintStmt;
-import interpreter.model.stmt.VarDeclStmt;
+import interpreter.model.exp.*;
+import interpreter.model.stmt.*;
 import interpreter.model.type.BoolType;
 import interpreter.model.type.IntType;
+import interpreter.model.type.StringType;
 import interpreter.model.value.BoolValue;
 import interpreter.model.value.IntValue;
+import interpreter.model.value.StringValue;
+import interpreter.model.exp.Relop;
 
 public class Examples {
     // int v; v=2; print(v)
@@ -75,4 +70,55 @@ public class Examples {
               new PrintStmt(new VarExp("a"))
       )
     );
+
+    // string varf; varf = "test.in"; openRFile(varf);
+    // int varc; readFile(varf, varc); print(varc);
+    // readFile(varf, varc); print(varc); closeRFile(varf);
+
+    public static final IStmt EX5 = new CompStmt(
+            new VarDeclStmt("varf", new StringType()),
+            new CompStmt(
+                    new AssignStmt("varf", new ValueExp(new StringValue("test.in"))),
+                    new CompStmt(
+                            new OpenRFileStmt(new VarExp("varf")),
+                            new CompStmt(
+                                    new VarDeclStmt("varc", new IntType()),
+                                    new CompStmt(
+                                            new ReadFileStmt(new VarExp("varf"), "varc"),
+                                            new CompStmt(
+                                                    new PrintStmt(new VarExp("varc")),
+                                                    new CompStmt(
+                                                            new ReadFileStmt(new VarExp("varf"), "varc"),
+                                                            new CompStmt(
+                                                                    new PrintStmt(new VarExp("varc")),
+                                                                    new CloseRFileStmt(new VarExp("varf"))
+                                                            )
+                                                    )
+                                            )
+                                    )
+                            )
+                    )
+            )
+    );
+
+    // int a; int b; a = 2; b = 3;
+    // if (a < b) then print(5) else print(10);
+    public static final IStmt EX6 = new CompStmt(
+            new VarDeclStmt("a", new IntType()),
+            new CompStmt(
+                    new VarDeclStmt("b", new IntType()),
+                    new CompStmt(
+                            new AssignStmt("a", new ValueExp(new IntValue(2))),
+                            new CompStmt(
+                                    new AssignStmt("b", new ValueExp(new IntValue(3))),
+                                    new IfStmt(
+                                            new RelationalExp(Relop.LT, new VarExp("a"), new VarExp("b")),
+                                            new PrintStmt(new ValueExp(new IntValue(5))),
+                                            new PrintStmt(new ValueExp(new IntValue(10)))
+                                    )
+                            )
+                    )
+            )
+    );
+
 }
