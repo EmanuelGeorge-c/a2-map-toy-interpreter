@@ -72,6 +72,7 @@ public class PrgState {
         return "ExeStack:\n" + exeStack + "\n" +
                 "SymTable:\n" + symTable + "\n" +
                 "Out:\n" + out + "\n" +
+                "FileTable:\n" + fileTable.toMap().keySet() + "\n"+
                 "------------------------------------\n";
     }
 }

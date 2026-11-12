@@ -26,7 +26,7 @@ class ControllerTest {
 
     private static PrgState run(IStmt program) throws Exception {
         PrgState state = PrgState.of(program);
-        Controller controller = new Controller(new Repository(state), false);
+        Controller controller = new Controller(new Repository(state,"test.log"), false);
         controller.allStep();
         return state;
     }
@@ -85,7 +85,7 @@ class ControllerTest {
             emptyState.getExeStack().pop();
         } catch (Exception ignored) {}
 
-        Controller controller = new Controller(new Repository(emptyState), false);
+        Controller controller = new Controller(new Repository(emptyState,"test.log"), false);
         var ex = assertThrows(StatementException.class, () -> controller.oneStep(emptyState));
         assertEquals("program state stack is empty", ex.getMessage());
     }

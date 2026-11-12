@@ -40,7 +40,7 @@ public class TextMenu {
 
             try {
                 PrgState state = PrgState.of(selectedProgram);
-                Controller controller = new Controller(new Repository(state), true);
+                Controller controller = new Controller(new Repository(state,"test.log"), true);
 
                 System.out.println("\n--- Program execution ---");
                 controller.allStep();
