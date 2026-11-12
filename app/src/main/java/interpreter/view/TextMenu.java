@@ -39,7 +39,7 @@ public class TextMenu {
             }
 
             try {
-                PrgState state = new PrgState(new MyStack<>(), new MyDictionary<>(), new MyList<>(), selectedProgram);
+                PrgState state = PrgState.of(selectedProgram);
                 Controller controller = new Controller(new Repository(state), true);
 
                 System.out.println("\n--- Program execution ---");
